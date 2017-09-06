@@ -82,4 +82,3 @@ while exit_game == False:
 #Exit Sequence
 pygame.quit()
 quit()
-
