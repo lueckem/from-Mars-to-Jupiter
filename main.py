@@ -37,8 +37,6 @@ def text_objects(text, font):
 def main():
     x = (display_width * 0.45)
     y = (display_height * 0.9)
-    x_change = 0
-    y_change = 0
 
     timer = 3
     dtime = 0
@@ -51,28 +49,24 @@ def main():
         #Catch Events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                exit_game = True
+                pygame.quit()
+                quit()
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    x_change = -10
-                elif event.key == pygame.K_RIGHT:
-                    x_change = 10
-            
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    x_change = 0
+        pressed = pygame.key.get_pressed()
+        if pressed[pygame.K_LEFT]: x -= 10
+        if pressed[pygame.K_RIGHT]: x += 10
 
-
-        #game logic  
-        x = x + x_change
-
-        if x < 0 or x > (display_width - ship_width):
-            timer = round(timer - dtime, 2)
-            message_display('Come back! ' + str(timer))
-
-        if timer <= 0:
-            exit_game = True
+ 
+        #game logic
+        #handle timer
+        if timer > 0:
+            if x < 0 or x > (display_width - ship_width):
+                timer = round(timer - dtime, 2)
+                message_display('Come back! ' + str(timer))
+        else:
+            message_display("You left your route!")
+            pygame.time.delay(2000)
+            main()
 
         
         #draw surface
