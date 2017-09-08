@@ -14,7 +14,11 @@ white = (255,255,255)
 gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption('A Working Title')
 clock = pygame.time.Clock()
+
+#load graphics
 shipImg = pygame.image.load('ship.png')
+asteroid_small_Img = pygame.image.load('asteroid_small.png')
+asteroid_medium_Img = pygame.image.load('asteroid_medium.png')
 
 
 #functions
@@ -40,6 +44,8 @@ def main():
 
     timer = 3
     dtime = 0
+
+    
 
     exit_game = False
 
