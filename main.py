@@ -12,6 +12,9 @@ shot_width = 5
 shot_height = 15
 shot_speed = 20
 
+large_text = 40
+small_text = 20
+
 num_small_asteroids = 10
 small_asteroid_width = 30
 small_asteroid_height = 30
@@ -26,10 +29,11 @@ large_asteroid_height = 100
 
 black = (0,0,0)
 white = (255,255,255)
+dark_white = (200,200,200)
 red = (255,0,0)
 
 gameDisplay = pygame.display.set_mode((display_width, display_height))
-pygame.display.set_caption('A Working Title')
+pygame.display.set_caption('From Mars to Jupiter')
 clock = pygame.time.Clock()
 
 #load graphics
@@ -39,11 +43,15 @@ asteroid_medium_Img = pygame.image.load('asteroid_medium.png')
 asteroid_large_Img = pygame.image.load('asteroid_large.png')
 
 #functions
+def game_quit():
+    pygame.quit()
+    quit()
+    
 def draw_image(image, x, y):
     gameDisplay.blit(image, (x,y))
 
-def message_display(text, x, y):
-    largeText = pygame.font.Font('freesansbold.ttf',40)
+def message_display(text, size, x, y):
+    largeText = pygame.font.Font('freesansbold.ttf', size)
     TextSurf, TextRect = text_objects(text, largeText)
     TextRect.center = (x,y)
     gameDisplay.blit(TextSurf, TextRect)
@@ -53,8 +61,9 @@ def text_objects(text, font):
     return textSurface, textSurface.get_rect()
 
 def crashed(pos1,pos2, width_1, height_1, width_2, height_2):
-    if pos2[0] >= pos1[0] - width_2 and pos2[0] <= pos1[0] + width_1:
-        if pos2[1] >= pos1[1] - height_2 and pos2[1] <= pos1[1] + height_1:
+
+    if pos1[0] - width_2 <= pos2[0] <= pos1[0] + width_1:
+        if pos1[1] - height_2 <= pos2[1] <= pos1[1] + height_1:
             return True
     else:
         return False
@@ -69,6 +78,21 @@ def shots_display(num_shots):
     text = font.render("Shots: "+str(num_shots), True, white)
     gameDisplay.blit(text,(0,20))
 
+def button(text, x, y, width, height, action):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+
+    if x <= mouse[0] <= x + width and y <= mouse[1] <= y + height:
+        pygame.draw.rect(gameDisplay, white,(x, y, width, height))
+        pygame.draw.rect(gameDisplay, black,(x + 2, y +2, width - 4, height - 4))
+        message_display(text, small_text, x + width/2, y + height/2)
+        if click[0] == 1: action()
+    else:
+        pygame.draw.rect(gameDisplay, dark_white,(x, y, width, height))
+        pygame.draw.rect(gameDisplay, black,(x + 2, y +2, width - 4, height - 4))
+        message_display(text, small_text, x + width/2, y + height/2)
+
+        
 #classes
 class Asteroid:
     def __init__(self, x, y, width, height):
@@ -83,9 +107,25 @@ class Shot:
         self.y = y
 
 
+#menu
+def menu():
+    exit_menu = False
+    while exit_menu == False:
+        gameDisplay.fill(black)
+        for event in pygame.event.get():
+                if event.type == pygame.QUIT: game_quit()
+
+        message_display("From Mars to Jupiter", large_text, display_width/2 , display_height/10)
+
+        button("Play",display_width/3,150,200,50,game_loop)
+        button("Quit",display_width/3,220,200,50,game_quit)
+
+        pygame.display.update()
+    
+
 
 #Game Loop
-def main():
+def game_loop():
 
     #variables
     x = (display_width * 0.45)
@@ -145,9 +185,7 @@ def main():
 
         #Catch Events
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+            if event.type == pygame.QUIT: game_quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and num_shots > 0:
                     shoot = True
@@ -163,25 +201,25 @@ def main():
         if timer > 0:
             if x < 0 or x > (display_width - ship_width):
                 timer = round(timer - dtime, 2)
-                message_display('Come back! ' + str(timer), display_width/2, display_height/2)
+                message_display('Come back! ' + str(timer), large_text, display_width/2, display_height/2)
         else:
-            message_display("You left your route!",display_width/2, display_height/2)
-            message_display("Final Score: " + str(score) ,display_width/2, display_height/2 + 60)
+            message_display("You left your route!", large_text, display_width/2, display_height/2)
+            message_display("Final Score: " + str(score) , large_text, display_width/2, display_height/2 + 60)
             #Final Score: " + str(score))
         
             pygame.display.update()
             pygame.time.delay(2000)
-            main()
+            menu()
             
         #update asteroids position and check for crashes
         for asteroid in asteroids:
             asteroid.y = asteroid.y + fallspeed
             if crashed((x,y), (asteroid.x,asteroid.y), ship_width, ship_height, asteroid.width, asteroid.height) == True:
-                message_display("You crashed!",display_width/2, display_height/2)
-                message_display("Final Score: " + str(score) ,display_width/2, display_height/2 + 60)
+                message_display("You crashed!", large_text, display_width/2, display_height/2)
+                message_display("Final Score: " + str(score) , large_text, display_width/2, display_height/2 + 60)
                 pygame.display.update()
                 pygame.time.delay(2000)
-                main()
+                menu()
 
             
             if asteroid.y >= display_height + 100:
@@ -198,7 +236,7 @@ def main():
                         if crashed((asteroid_2.x, asteroid_2.y), (x_asteroid, asteroid.y), asteroid_2.width, asteroid_2.height, asteroid.width, asteroid.height) == True:
                             num_crashes += 1
 
-                    if num_crashes <= 1:
+                    if num_crashes == 0:
                         asteroid.x = x_asteroid
                         asteroid_crash = False
 
@@ -239,6 +277,6 @@ def main():
 
 
 #Main Sequence
-main()
-pygame.quit()
-quit()
+menu()
+game_loop()
+game_quit()
