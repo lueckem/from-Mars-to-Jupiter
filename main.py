@@ -27,6 +27,10 @@ num_large_asteroids = 2
 large_asteroid_width = 100
 large_asteroid_height = 100
 
+bonus_radius = 15
+num_shot_boni = 1
+num_score_boni = 1
+
 black = (0,0,0)
 white = (255,255,255)
 dark_white = (200,200,200)
@@ -98,6 +102,30 @@ def unpause():
     global paused
     paused = False
 
+        
+#classes
+class Asteroid:
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
+class Shot:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+class Bonus:
+    def __init__(self, x, y, feature):
+        self.x = x
+        self.y = y
+        self.feature = feature
+        
+
+
+
+
 def controls():
     exit_controls = False
     while exit_controls == False:
@@ -113,20 +141,6 @@ def controls():
         button("back",display_width/3,400,200,50,menu)
 
         pygame.display.update()
-
-        
-#classes
-class Asteroid:
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-
-class Shot:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
 
 
 #menu
@@ -151,6 +165,10 @@ def pause():
         gameDisplay.fill(black)
         for event in pygame.event.get():
                 if event.type == pygame.QUIT: game_quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        unpause()
+                        
 
         message_display("Pause", large_text, display_width/2 , display_height/10)
 
@@ -179,6 +197,7 @@ def game_loop():
     dtime = 0
 
     asteroids = list()
+    boni = list()
     shots = list()
     
 
@@ -216,7 +235,12 @@ def game_loop():
                 asteroids[i].x = x_asteroid
                 asteroids[i].y = y_asteroid
                 asteroid_crash = False
-            
+
+    #initialize boni
+    for i in range(0, num_shot_boni):
+        boni.append(Bonus(random.randint(0, display_width), random.randint(-4000, -1500),"shots"))
+    for i in range(0, num_score_boni):
+        boni.append(Bonus(random.randint(0, display_width), random.randint(-4000, -1500),"score"))
 
     exit_game = False
 
@@ -299,6 +323,21 @@ def game_loop():
                     shots.remove(shot)
                     asteroid.y = display_height +1000
 
+
+        #update boni
+        for bonus in boni:
+            bonus.y += fallspeed
+            if bonus.y > display_height + 100:
+                bonus.y = random.randint(-4000, -500)
+                bonus.x = random.randint(0, display_width)
+
+            if crashed((x,y), (bonus.x-bonus_radius,bonus.y-bonus_radius), ship_width, ship_height, 2*bonus_radius,2*bonus_radius) == True:
+                bonus.y = random.randint(-4000, -500)
+                if bonus.feature == "shots":
+                    num_shots += 3
+                elif bonus.feature == "score":
+                    score += 20
+
         #draw surface
         draw_image(shipImg, x, y)
 
@@ -312,7 +351,13 @@ def game_loop():
 
         for shot in shots:
             pygame.draw.rect(gameDisplay, red, (shot.x, shot.y, shot_width, shot_height))
-        
+
+        for bonus in boni:
+            pygame.draw.circle(gameDisplay, white, (bonus.x,bonus.y), bonus_radius, 3)
+            message_display(bonus.feature, 7, bonus.x, bonus.y)
+
+
+                    
         score_display(score)
         shots_display(num_shots)
         pygame.display.update()
