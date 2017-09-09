@@ -32,6 +32,8 @@ white = (255,255,255)
 dark_white = (200,200,200)
 red = (255,0,0)
 
+paused = False
+
 gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption('From Mars to Jupiter')
 clock = pygame.time.Clock()
@@ -92,6 +94,26 @@ def button(text, x, y, width, height, action):
         pygame.draw.rect(gameDisplay, black,(x + 2, y +2, width - 4, height - 4))
         message_display(text, small_text, x + width/2, y + height/2)
 
+def unpause():
+    global paused
+    paused = False
+
+def controls():
+    exit_controls = False
+    while exit_controls == False:
+        gameDisplay.fill(black)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: game_quit()
+
+        message_display("Controls", large_text, display_width/2 , display_height/10)
+        message_display("Move: Arrow Keys", small_text, 300, 175)
+        message_display("Shoot: Space", small_text, 300, 245)
+        message_display("Pause: p", small_text, 300, 315)
+
+        button("back",display_width/3,400,200,50,menu)
+
+        pygame.display.update()
+
         
 #classes
 class Asteroid:
@@ -118,7 +140,23 @@ def menu():
         message_display("From Mars to Jupiter", large_text, display_width/2 , display_height/10)
 
         button("Play",display_width/3,150,200,50,game_loop)
-        button("Quit",display_width/3,220,200,50,game_quit)
+        button("Controls",display_width/3,220,200,50,controls)
+        button("Quit",display_width/3,290,200,50,game_quit)
+
+        pygame.display.update()
+
+#pause
+def pause():
+    while paused == True:
+        gameDisplay.fill(black)
+        for event in pygame.event.get():
+                if event.type == pygame.QUIT: game_quit()
+
+        message_display("Pause", large_text, display_width/2 , display_height/10)
+
+        button("Continue",display_width/3,150,200,50,unpause)
+        button("Restart",display_width/3,220,200,50,game_loop)
+        button("Quit",display_width/3,290,200,50,game_quit)
 
         pygame.display.update()
     
@@ -126,6 +164,8 @@ def menu():
 
 #Game Loop
 def game_loop():
+
+    global paused
 
     #variables
     x = (display_width * 0.45)
@@ -189,6 +229,9 @@ def game_loop():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and num_shots > 0:
                     shoot = True
+                if event.key == pygame.K_p:
+                    paused = True
+                    pause()
         
         pressed = pygame.key.get_pressed()
         if pressed[pygame.K_LEFT]: x -= 10
