@@ -8,6 +8,9 @@ display_height = 700
 display_width = 600
 ship_width = 60
 ship_height = 80
+shot_width = 5
+shot_height = 15
+shot_speed = 20
 
 num_small_asteroids = 10
 small_asteroid_width = 30
@@ -33,6 +36,7 @@ shipImg = pygame.image.load('ship.png')
 asteroid_small_Img = pygame.image.load('asteroid_small.png')
 asteroid_medium_Img = pygame.image.load('asteroid_medium.png')
 asteroid_large_Img = pygame.image.load('asteroid_large.png')
+shotImg = pygame.image.load('shot.png')
 
 #functions
 def draw_image(image, x, y):
@@ -60,6 +64,11 @@ def score_display(score):
     text = font.render("Score: "+str(score), True, white)
     gameDisplay.blit(text,(0,0))
 
+def shots_display(num_shots):
+    font = pygame.font.SysFont(None, 25)
+    text = font.render("Shots: "+str(num_shots), True, white)
+    gameDisplay.blit(text,(0,20))
+
 #classes
 class Asteroid:
     def __init__(self, x, y, width, height):
@@ -67,6 +76,11 @@ class Asteroid:
         self.y = y
         self.width = width
         self.height = height
+
+class Shot:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
 
 
@@ -76,13 +90,16 @@ def main():
     #variables
     x = (display_width * 0.45)
     y = (display_height * 0.9)
+    shoot = False
     score = 0
     fallspeed = 2
-
+    num_shots = 3
+    
     timer = 3
     dtime = 0
 
     asteroids = list()
+    shots = list()
     
 
     #initialize Asteroids
@@ -131,10 +148,14 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and num_shots > 0:
+                    shoot = True
+        
         pressed = pygame.key.get_pressed()
         if pressed[pygame.K_LEFT]: x -= 10
         if pressed[pygame.K_RIGHT]: x += 10
+            
 
  
         #game logic
@@ -180,7 +201,22 @@ def main():
                     if num_crashes <= 1:
                         asteroid.x = x_asteroid
                         asteroid_crash = False
-                        
+
+        #shoot
+        if shoot == True:
+            shots.append(Shot(x+8,y-shot_height+shot_speed))
+            shots.append(Shot(x+48,y-shot_height+shot_speed))
+            shoot = False
+            num_shots -= 1
+
+        for shot in shots:
+            shot.y -= shot_speed
+            if shot.y < -1000:
+                shots.remove(shot)
+            for asteroid in asteroids:
+                if crashed ((shot.x,shot.y),(asteroid.x, asteroid.y), shot_width, shot_height, asteroid.width, asteroid.height) == True:
+                    shots.remove(shot)
+                    asteroid.y = display_height +1000
 
         #draw surface
         draw_image(shipImg, x, y)
@@ -192,8 +228,12 @@ def main():
                 draw_image(asteroid_medium_Img, asteroid.x, asteroid.y)
             else:
                 draw_image(asteroid_large_Img, asteroid.x, asteroid.y)
+
+        for shot in shots:
+             draw_image(shotImg, shot.x, shot.y)
         
-        score_display(score)        
+        score_display(score)
+        shots_display(num_shots)
         pygame.display.update()
         dtime = clock.tick(60) / 1000
 
