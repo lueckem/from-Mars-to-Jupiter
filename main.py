@@ -8,17 +8,15 @@ display_height = 800
 display_width = 600
 ship_width = 60
 ship_height = 80
-fallspeed = 50
+fallspeed = 2
 
-num_small_asteroids = 10
+num_small_asteroids = 20
 small_asteroid_width = 30
 small_asteroid_height = 30
-small_asteroids = list()
 
 num_medium_asteroids = 2
 medium_asteroid_width = 70
 medium_asteroid_width = 70
-medium_asteroids = list()
 
 black = (0,0,0)
 white = (255,255,255)
@@ -32,7 +30,8 @@ shipImg = pygame.image.load('ship.png')
 asteroid_small_Img = pygame.image.load('asteroid_small.png')
 asteroid_medium_Img = pygame.image.load('asteroid_medium.png')
 
-
+def replace_at_index(tup, ix, val):
+    return tup[:ix] + (val,) + tup[ix+1:]
 
 def draw_image(image, x, y):
     gameDisplay.blit(image, (x,y))
@@ -42,7 +41,7 @@ def message_display(text):
     TextSurf, TextRect = text_objects(text, largeText)
     TextRect.center = ((display_width/2),(display_height/2))
     gameDisplay.blit(TextSurf, TextRect)
-    pygame.display.update()
+    #pygame.display.update()
     
 def text_objects(text, font):
     textSurface = font.render(text, True, white)
@@ -67,11 +66,11 @@ def main():
     timer = 3
     dtime = 0
 
+    small_asteroids = list()
+    medium_asteroids = list()
 
-    #initialize Asteroids
-    x_asteroid = display_width - (small_asteroid_width/2)
-    y_asteroid = -500
-        
+
+    #initialize Asteroids    
     for i in range(0,num_small_asteroids):
         asteroid_crash = True
         
@@ -116,16 +115,29 @@ def main():
                 message_display('Come back! ' + str(timer))
         else:
             message_display("You left your route!")
+            pygame.display.update()
             pygame.time.delay(2000)
             main()
+            
+        #update asteroids position and check for crashes
+        for i in range(0,num_small_asteroids):
+            small_asteroids[i] = replace_at_index(small_asteroids[i], 1, small_asteroids[i][1] + fallspeed)
+            #print(small_asteroids)
+            if crashed((x,y), (small_asteroids[i][0],small_asteroids[i][1]), ship_width, ship_height, small_asteroid_width, small_asteroid_height) == True:
+                message_display("You crashed!")
+                pygame.display.update()
+                pygame.time.delay(2000)
+                main()
+            if small_asteroids[i][1] >= display_height + 100:
+                small_asteroids[i] = replace_at_index(small_asteroids[i], 1, -800)
+            
 
         
         #draw surface
         draw_image(shipImg, x, y)
-##        for asteroid in small_asteroids:
-##            y_new = asteroid[1] + fallspeed
-##            print (small_asteroids)
-##            draw_image(asteroid_small_Img, asteroid[0], asteroid[1])
+
+        for i in range(0,num_small_asteroids):
+            draw_image(asteroid_small_Img, small_asteroids[i][0], small_asteroids[i][1])
                 
         pygame.display.update()
         dtime = clock.tick(60) / 1000
