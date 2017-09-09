@@ -8,13 +8,12 @@ display_height = 700
 display_width = 600
 ship_width = 60
 ship_height = 80
-fallspeed = 2
 
-num_small_asteroids = 20
+num_small_asteroids = 10
 small_asteroid_width = 30
 small_asteroid_height = 30
 
-num_medium_asteroids = 2
+num_medium_asteroids = 5
 medium_asteroid_width = 70
 medium_asteroid_height = 70
 
@@ -39,10 +38,10 @@ asteroid_large_Img = pygame.image.load('asteroid_large.png')
 def draw_image(image, x, y):
     gameDisplay.blit(image, (x,y))
 
-def message_display(text):
+def message_display(text, x, y):
     largeText = pygame.font.Font('freesansbold.ttf',40)
     TextSurf, TextRect = text_objects(text, largeText)
-    TextRect.center = ((display_width/2),(display_height/2))
+    TextRect.center = (x,y)
     gameDisplay.blit(TextSurf, TextRect)
     
 def text_objects(text, font):
@@ -56,6 +55,10 @@ def crashed(pos1,pos2, width_1, height_1, width_2, height_2):
     else:
         return False
 
+def score_display(score):
+    font = pygame.font.SysFont(None, 25)
+    text = font.render("Score: "+str(score), True, white)
+    gameDisplay.blit(text,(0,0))
 
 #classes
 class Asteroid:
@@ -73,6 +76,8 @@ def main():
     #variables
     x = (display_width * 0.45)
     y = (display_height * 0.9)
+    score = 0
+    fallspeed = 2
 
     timer = 3
     dtime = 0
@@ -137,9 +142,12 @@ def main():
         if timer > 0:
             if x < 0 or x > (display_width - ship_width):
                 timer = round(timer - dtime, 2)
-                message_display('Come back! ' + str(timer))
+                message_display('Come back! ' + str(timer), display_width/2, display_height/2)
         else:
-            message_display("You left your route!")
+            message_display("You left your route!",display_width/2, display_height/2)
+            message_display("Final Score: " + str(score) ,display_width/2, display_height/2 + 60)
+            #Final Score: " + str(score))
+        
             pygame.display.update()
             pygame.time.delay(2000)
             main()
@@ -148,13 +156,31 @@ def main():
         for asteroid in asteroids:
             asteroid.y = asteroid.y + fallspeed
             if crashed((x,y), (asteroid.x,asteroid.y), ship_width, ship_height, asteroid.width, asteroid.height) == True:
-                message_display("You crashed!")
+                message_display("You crashed!",display_width/2, display_height/2)
+                message_display("Final Score: " + str(score) ,display_width/2, display_height/2 + 60)
                 pygame.display.update()
                 pygame.time.delay(2000)
                 main()
+
+            
             if asteroid.y >= display_height + 100:
                 asteroid.y = -800
+                score += 1
+                if score % 20 == 0:
+                    fallspeed += 1
+                
+                asteroid_crash = True
+                while asteroid_crash == True:
+                    num_crashes = 0
+                    x_asteroid = random.randint(-small_asteroid_width/2, display_width - (small_asteroid_width/2))                        
+                    for asteroid_2 in asteroids:
+                        if crashed((asteroid_2.x, asteroid_2.y), (x_asteroid, asteroid.y), asteroid_2.width, asteroid_2.height, asteroid.width, asteroid.height) == True:
+                            num_crashes += 1
 
+                    if num_crashes <= 1:
+                        asteroid.x = x_asteroid
+                        asteroid_crash = False
+                        
 
         #draw surface
         draw_image(shipImg, x, y)
@@ -166,7 +192,8 @@ def main():
                 draw_image(asteroid_medium_Img, asteroid.x, asteroid.y)
             else:
                 draw_image(asteroid_large_Img, asteroid.x, asteroid.y)
-                
+        
+        score_display(score)        
         pygame.display.update()
         dtime = clock.tick(60) / 1000
 
