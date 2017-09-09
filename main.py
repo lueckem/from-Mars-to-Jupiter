@@ -26,6 +26,7 @@ large_asteroid_height = 100
 
 black = (0,0,0)
 white = (255,255,255)
+red = (255,0,0)
 
 gameDisplay = pygame.display.set_mode((display_width, display_height))
 pygame.display.set_caption('A Working Title')
@@ -36,7 +37,6 @@ shipImg = pygame.image.load('ship.png')
 asteroid_small_Img = pygame.image.load('asteroid_small.png')
 asteroid_medium_Img = pygame.image.load('asteroid_medium.png')
 asteroid_large_Img = pygame.image.load('asteroid_large.png')
-shotImg = pygame.image.load('shot.png')
 
 #functions
 def draw_image(image, x, y):
@@ -230,7 +230,7 @@ def main():
                 draw_image(asteroid_large_Img, asteroid.x, asteroid.y)
 
         for shot in shots:
-             draw_image(shotImg, shot.x, shot.y)
+            pygame.draw.rect(gameDisplay, red, (shot.x, shot.y, shot_width, shot_height))
         
         score_display(score)
         shots_display(num_shots)
