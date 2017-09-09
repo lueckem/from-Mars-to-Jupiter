@@ -4,7 +4,7 @@ import random
 pygame.init()
 
 #constants
-display_height = 800
+display_height = 700
 display_width = 600
 ship_width = 60
 ship_height = 80
@@ -16,7 +16,11 @@ small_asteroid_height = 30
 
 num_medium_asteroids = 2
 medium_asteroid_width = 70
-medium_asteroid_width = 70
+medium_asteroid_height = 70
+
+num_large_asteroids = 2
+large_asteroid_width = 100
+large_asteroid_height = 100
 
 black = (0,0,0)
 white = (255,255,255)
@@ -29,10 +33,9 @@ clock = pygame.time.Clock()
 shipImg = pygame.image.load('ship.png')
 asteroid_small_Img = pygame.image.load('asteroid_small.png')
 asteroid_medium_Img = pygame.image.load('asteroid_medium.png')
+asteroid_large_Img = pygame.image.load('asteroid_large.png')
 
-def replace_at_index(tup, ix, val):
-    return tup[:ix] + (val,) + tup[ix+1:]
-
+#functions
 def draw_image(image, x, y):
     gameDisplay.blit(image, (x,y))
 
@@ -41,7 +44,6 @@ def message_display(text):
     TextSurf, TextRect = text_objects(text, largeText)
     TextRect.center = ((display_width/2),(display_height/2))
     gameDisplay.blit(TextSurf, TextRect)
-    #pygame.display.update()
     
 def text_objects(text, font):
     textSurface = font.render(text, True, white)
@@ -53,7 +55,16 @@ def crashed(pos1,pos2, width_1, height_1, width_2, height_2):
             return True
     else:
         return False
-                    
+
+
+#classes
+class Asteroid:
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+
 
 
 #Game Loop
@@ -66,30 +77,44 @@ def main():
     timer = 3
     dtime = 0
 
-    small_asteroids = list()
-    medium_asteroids = list()
+    asteroids = list()
+    
 
-
-    #initialize Asteroids    
+    #initialize Asteroids
     for i in range(0,num_small_asteroids):
+        asteroids.append(Asteroid(0,0,small_asteroid_width,small_asteroid_height))
+    for i in range(0,num_medium_asteroids):
+        asteroids.append(Asteroid(0,0,medium_asteroid_width,medium_asteroid_height))
+    for i in range(0,num_large_asteroids):
+        asteroids.append(Asteroid(0,0,large_asteroid_width,large_asteroid_height))
+
+    
+    for i in range(0,num_small_asteroids + num_medium_asteroids + num_large_asteroids):
         asteroid_crash = True
         
         while asteroid_crash == True:
             num_crashes = 0
             x_asteroid = random.randint(-small_asteroid_width/2, display_width - (small_asteroid_width/2))
             y_asteroid = random.randint(-2000, -500)
-                                        
-            for asteroid in small_asteroids:
-                if crashed(asteroid, (x_asteroid,y_asteroid), small_asteroid_width, small_asteroid_height, small_asteroid_width, small_asteroid_height) == True:
-                    num_crashes += 1
+
+            if i <= num_small_asteroids:                            
+                for asteroid in asteroids:
+                    if crashed((asteroid.x,asteroid.y), (x_asteroid,y_asteroid), asteroid.width, asteroid.height, small_asteroid_width, small_asteroid_height) == True:
+                        num_crashes += 1
+            elif i <= num_medium_asteroids:
+                for asteroid in asteroids:
+                    if crashed((asteroid.x,asteroid.y), (x_asteroid,y_asteroid), asteroid.width, asteroid.height, medium_asteroid_width, medium_asteroid_height) == True:
+                        num_crashes += 1
+            else:
+                for asteroid in asteroids:
+                    if crashed((asteroid.x,asteroid.y), (x_asteroid,y_asteroid), asteroid.width, asteroid.height, large_asteroid_width, large_asteroid_height) == True:
+                        num_crashes += 1
 
             if num_crashes == 0:
-                small_asteroids.append((x_asteroid, y_asteroid))
+                asteroids[i].x = x_asteroid
+                asteroids[i].y = y_asteroid
                 asteroid_crash = False
             
-        #for i in range(0,num_medium_asteroids):
-        #medium_asteroids.append((0,0))
-
 
     exit_game = False
 
@@ -120,24 +145,27 @@ def main():
             main()
             
         #update asteroids position and check for crashes
-        for i in range(0,num_small_asteroids):
-            small_asteroids[i] = replace_at_index(small_asteroids[i], 1, small_asteroids[i][1] + fallspeed)
-            #print(small_asteroids)
-            if crashed((x,y), (small_asteroids[i][0],small_asteroids[i][1]), ship_width, ship_height, small_asteroid_width, small_asteroid_height) == True:
+        for asteroid in asteroids:
+            asteroid.y = asteroid.y + fallspeed
+            if crashed((x,y), (asteroid.x,asteroid.y), ship_width, ship_height, asteroid.width, asteroid.height) == True:
                 message_display("You crashed!")
                 pygame.display.update()
                 pygame.time.delay(2000)
                 main()
-            if small_asteroids[i][1] >= display_height + 100:
-                small_asteroids[i] = replace_at_index(small_asteroids[i], 1, -800)
-            
+            if asteroid.y >= display_height + 100:
+                asteroid.y = -800
 
-        
+
         #draw surface
         draw_image(shipImg, x, y)
 
-        for i in range(0,num_small_asteroids):
-            draw_image(asteroid_small_Img, small_asteroids[i][0], small_asteroids[i][1])
+        for asteroid in asteroids:
+            if asteroid.width == small_asteroid_width:
+                draw_image(asteroid_small_Img, asteroid.x, asteroid.y)
+            elif asteroid.width == medium_asteroid_width:
+                draw_image(asteroid_medium_Img, asteroid.x, asteroid.y)
+            else:
+                draw_image(asteroid_large_Img, asteroid.x, asteroid.y)
                 
         pygame.display.update()
         dtime = clock.tick(60) / 1000
