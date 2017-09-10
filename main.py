@@ -6,6 +6,7 @@
 ## optimize bonus system
 ## easy,medium,hard
 ## optimize control sensibility
+## new menu after crash
 
 import pygame
 import random
