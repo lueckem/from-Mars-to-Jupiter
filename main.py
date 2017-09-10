@@ -1,3 +1,12 @@
+## to do:
+## transparent background with gimp
+## background
+## update asteroid graphics
+## highscores
+## optimize bonus system
+## easy,medium,hard
+## optimize control sensibility
+
 import pygame
 import random
 
@@ -244,7 +253,7 @@ def game_loop():
 
     exit_game = False
 
-    while exit_game == False:
+    while exit_game == False:  
         gameDisplay.fill(black)
 
         #Catch Events
