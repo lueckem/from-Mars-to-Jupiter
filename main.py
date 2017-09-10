@@ -6,7 +6,6 @@
 ## optimize bonus system
 ## easy,medium,hard
 ## optimize control sensibility
-## new menu after crash
 
 import pygame
 import random
@@ -43,7 +42,7 @@ num_score_boni = 1
 
 black = (0,0,0)
 white = (255,255,255)
-dark_white = (200,200,200)
+dark_white = (175,175,175)
 red = (255,0,0)
 
 paused = False
@@ -76,6 +75,7 @@ def text_objects(text, font):
     textSurface = font.render(text, True, white)
     return textSurface, textSurface.get_rect()
 
+#checks if 2 objects crashed
 def crashed(pos1,pos2, width_1, height_1, width_2, height_2):
 
     if pos1[0] - width_2 <= pos2[0] <= pos1[0] + width_1:
@@ -94,6 +94,7 @@ def shots_display(num_shots):
     text = font.render("Shots: "+str(num_shots), True, white)
     gameDisplay.blit(text,(0,20))
 
+#builds a button and does action if clicked
 def button(text, x, y, width, height, action):
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
@@ -102,7 +103,9 @@ def button(text, x, y, width, height, action):
         pygame.draw.rect(gameDisplay, white,(x, y, width, height))
         pygame.draw.rect(gameDisplay, black,(x + 2, y +2, width - 4, height - 4))
         message_display(text, small_text, x + width/2, y + height/2)
-        if click[0] == 1: action()
+        if click[0] == 1:
+            pygame.time.delay(100)
+            action()
     else:
         pygame.draw.rect(gameDisplay, dark_white,(x, y, width, height))
         pygame.draw.rect(gameDisplay, black,(x + 2, y +2, width - 4, height - 4))
@@ -111,8 +114,31 @@ def button(text, x, y, width, height, action):
 def unpause():
     global paused
     paused = False
+    
+#asks user question and displays and returns answer
+def ask(question):
+    answer = ""
+    while 1:
+        gameDisplay.fill(black)
+        message_display(question + ": " + answer, large_text, display_width/2 , display_height/2)
 
         
+        event = pygame.event.poll()
+        if event.type == pygame.KEYDOWN:
+            key = event.key
+
+            if key == pygame.K_BACKSPACE:
+                answer = answer[0:-1]
+            elif key == pygame.K_RETURN:
+              break
+            elif key <= 127:
+                answer += chr(key)
+
+        pygame.display.update()
+    
+    return answer
+
+       
 #classes
 class Asteroid:
     def __init__(self, x, y, width, height):
@@ -153,7 +179,7 @@ def controls():
         pygame.display.update()
 
 
-#menu
+#main menu
 def menu():
     exit_menu = False
     while exit_menu == False:
@@ -166,6 +192,51 @@ def menu():
         button("Play",display_width/3,150,200,50,game_loop)
         button("Controls",display_width/3,220,200,50,controls)
         button("Quit",display_width/3,290,200,50,game_quit)
+
+        pygame.display.update()
+
+#menu that shows after you loose
+def crash_menu(score):
+    #make list of current highscores
+    highscores = []
+    file = open("highscores.txt", "r")
+    for line in file:
+        highscores.append(int(line))
+
+    #if the score is high enough ask for name, else only show menu
+    if score > min(highscores) or len(highscores) < 10:
+        gameDisplay.fill(black)
+        message_display("You got a Highscore!", large_text, display_width/2 , display_height/2)
+        pygame.display.update()
+        pygame.time.delay(1500)
+
+        username = ask("name")
+
+        highscores.append(score)
+        highscores.sort()
+        highscores.reverse()
+
+        #stand: layout für txt überlegen, einlesen dementsprechend anpassen, neue highscores wieder in datei schreiben
+
+        if len(highscores) > 10:
+            highscores.remove(highscores[10])
+
+
+    exit_crash_menu = False
+    while exit_crash_menu == False:
+        gameDisplay.fill(black)
+        for event in pygame.event.get():
+                if event.type == pygame.QUIT: game_quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE: game_loop()
+
+        message_display("Final Score: " + str(score), large_text, display_width/2 , display_height/10)
+
+        button("Restart",display_width/3,150,200,50,game_loop)
+        button("Menu",display_width/3,220,200,50,menu)
+        button("Quit",display_width/3,290,200,50,game_quit)
+
+        message_display("You can also press space to restart.", small_text, display_width/2 , 400)
 
         pygame.display.update()
 
@@ -252,9 +323,10 @@ def game_loop():
     for i in range(0, num_score_boni):
         boni.append(Bonus(random.randint(0, display_width), random.randint(-4000, -1500),"score"))
 
+
     exit_game = False
 
-    while exit_game == False:  
+    while exit_game == False:
         gameDisplay.fill(black)
 
         #Catch Events
@@ -281,23 +353,19 @@ def game_loop():
                 message_display('Come back! ' + str(timer), large_text, display_width/2, display_height/2)
         else:
             message_display("You left your route!", large_text, display_width/2, display_height/2)
-            message_display("Final Score: " + str(score) , large_text, display_width/2, display_height/2 + 60)
-            #Final Score: " + str(score))
-        
             pygame.display.update()
-            pygame.time.delay(2000)
-            menu()
+            pygame.time.delay(1500)
+            crash_menu(score)
+        
             
         #update asteroids position and check for crashes
         for asteroid in asteroids:
             asteroid.y = asteroid.y + fallspeed
             if crashed((x,y), (asteroid.x,asteroid.y), ship_width, ship_height, asteroid.width, asteroid.height) == True:
                 message_display("You crashed!", large_text, display_width/2, display_height/2)
-                message_display("Final Score: " + str(score) , large_text, display_width/2, display_height/2 + 60)
                 pygame.display.update()
-                pygame.time.delay(2000)
-                menu()
-
+                pygame.time.delay(1500)
+                crash_menu(score)
             
             if asteroid.y >= display_height + 100:
                 asteroid.y = -800
