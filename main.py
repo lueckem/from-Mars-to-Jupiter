@@ -1,6 +1,6 @@
 ## to do:
 ## update asteroid graphics
-## optimize bonus system
+## small tutorial
 ## easy,medium,hard
 ## optimize control sensibility
 
@@ -38,6 +38,7 @@ large_asteroid_height = 80
 bonus_radius = 15
 num_shot_boni = 1
 num_score_boni = 1
+num_slow_boni = 1
 
 black = (0,0,0)
 white = (255,255,255)
@@ -383,9 +384,11 @@ def game_loop():
 
     #initialize boni
     for i in range(0, num_shot_boni):
-        boni.append(Bonus(random.randint(0, display_width), random.randint(-4000, -1500),"shots"))
+        boni.append(Bonus(random.randint(0, display_width), random.randint(-6000, -1500),"shots"))
     for i in range(0, num_score_boni):
-        boni.append(Bonus(random.randint(0, display_width), random.randint(-4000, -1500),"score"))
+        boni.append(Bonus(random.randint(0, display_width), random.randint(-6000, -1500),"score"))
+    for i in range(0, num_slow_boni):
+        boni.append(Bonus(random.randint(0, display_width), random.randint(-6000, -1500),"slow"))
 
 
     exit_game = False
@@ -484,15 +487,17 @@ def game_loop():
         for bonus in boni:
             bonus.y += fallspeed
             if bonus.y > display_height + 100:
-                bonus.y = random.randint(-4000, -500)
+                bonus.y = random.randint(-6000, -500)
                 bonus.x = random.randint(0, display_width)
 
             if crashed((x,y), (bonus.x-bonus_radius,bonus.y-bonus_radius), ship_width, ship_height, 2*bonus_radius,2*bonus_radius) == True:
-                bonus.y = random.randint(-4000, -500)
+                bonus.y = random.randint(-6000, -500)
                 if bonus.feature == "shots":
                     num_shots += 3
                 elif bonus.feature == "score":
                     score += 20
+                elif bonus.feature == "slow":
+                    fallspeed -= 1
 
         #draw surface
         #draw background
@@ -517,8 +522,14 @@ def game_loop():
             
         #draw boni
         for bonus in boni:
-            pygame.draw.circle(gameDisplay, white, (bonus.x,bonus.y), bonus_radius, 3)
-            message_display(bonus.feature, 7, bonus.x, bonus.y)
+            pygame.draw.circle(gameDisplay, white, (bonus.x,bonus.y), bonus_radius, 2)
+            if bonus.feature == "shots":
+                pygame.draw.rect(gameDisplay, red, (bonus.x - bonus_radius/5 , bonus.y - (4*bonus_radius)/5, (2*bonus_radius)/5, (8*bonus_radius)/5))
+            elif bonus.feature == "score":
+                message_display("+20", 10, bonus.x, bonus.y)
+            elif bonus.feature == "slow":
+                pygame.draw.polygon(gameDisplay, white, [[bonus.x - 7, bonus.y - 7], [bonus.x + 7, bonus.y -7], [bonus.x, bonus.y + 10]])
+                
 
         #draw shots
         for shot in shots:
