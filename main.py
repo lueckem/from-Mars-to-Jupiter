@@ -1,6 +1,4 @@
 ## to do:
-## transparent background with gimp
-## background
 ## update asteroid graphics
 ## optimize bonus system
 ## easy,medium,hard
@@ -19,6 +17,8 @@ ship_height = 80
 shot_width = 5
 shot_height = 15
 shot_speed = 20
+thing_width = 6
+thing_speed = 6
 
 large_text = 40
 small_text = 20
@@ -32,8 +32,8 @@ medium_asteroid_width = 70
 medium_asteroid_height = 70
 
 num_large_asteroids = 2
-large_asteroid_width = 100
-large_asteroid_height = 100
+large_asteroid_width = 110
+large_asteroid_height = 80
 
 bonus_radius = 15
 num_shot_boni = 1
@@ -43,6 +43,7 @@ black = (0,0,0)
 white = (255,255,255)
 dark_white = (175,175,175)
 red = (255,0,0)
+bright_blue = (138,255,255)
 
 paused = False
 
@@ -326,7 +327,7 @@ def game_loop():
 
     #variables
     x = (display_width * 0.45)
-    y = (display_height * 0.9)
+    y = (display_height * 0.85)
     shoot = False
     score = 0
     fallspeed = 2
@@ -338,6 +339,7 @@ def game_loop():
     asteroids = list()
     boni = list()
     shots = list()
+    #exhaust = list()
 
     #initialize background
     stars_1 = init_background(0, display_width, display_height, 100)
@@ -513,16 +515,25 @@ def game_loop():
             else:
                 draw_image(asteroid_large_Img, asteroid.x, asteroid.y)
             
-        #draw shots
-        for shot in shots:
-            pygame.draw.rect(gameDisplay, red, (shot.x, shot.y, shot_width, shot_height))
-        
         #draw boni
         for bonus in boni:
             pygame.draw.circle(gameDisplay, white, (bonus.x,bonus.y), bonus_radius, 3)
             message_display(bonus.feature, 7, bonus.x, bonus.y)
 
+        #draw shots
+        for shot in shots:
+            pygame.draw.rect(gameDisplay, red, (shot.x, shot.y, shot_width, shot_height))
 
+        #draw exhaust
+##        exhaust.append(Star(x + 27, y + 63 - thing_speed))
+##        for thing in exhaust:
+##            thing.y += thing_speed
+##            if thing.y > display_height:
+##                exhaust.remove(thing)
+##            pygame.draw.rect(gameDisplay, bright_blue, (thing.x, thing.y, thing_width, thing_speed))
+        pygame.draw.polygon(gameDisplay, bright_blue, [[x + 27, y +63], [x + 33, y + 63], [x + 30, y + 63 + 28]])
+
+        
                     
         score_display(score)
         shots_display(num_shots)
