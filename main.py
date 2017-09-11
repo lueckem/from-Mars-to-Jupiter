@@ -2,7 +2,6 @@
 ## transparent background with gimp
 ## background
 ## update asteroid graphics
-## highscores
 ## optimize bonus system
 ## easy,medium,hard
 ## optimize control sensibility
@@ -120,6 +119,7 @@ def ask(question):
     answer = ""
     while 1:
         gameDisplay.fill(black)
+        message_display("You got a Highscore!", large_text, display_width/2 , display_height/10)
         message_display(question + ": " + answer, large_text, display_width/2 , display_height/2)
 
         
@@ -137,6 +137,10 @@ def ask(question):
         pygame.display.update()
     
     return answer
+
+#key function for highscores
+def getKey(item):
+    return int(item[0])
 
        
 #classes
@@ -178,6 +182,31 @@ def controls():
 
         pygame.display.update()
 
+def show_highscores():
+    #get current highscores
+    highscores = []
+    file = open("highscores.txt", "r")
+    for line in file:
+        highscores.append(line)
+    file.close()
+
+    
+        
+    exit_highscores = False
+    while exit_highscores == False:
+        gameDisplay.fill(black)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: game_quit()
+
+        message_display("Highscores", large_text, display_width/2 , display_height/10)
+
+        for i in range(0,len(highscores)):
+            message_display(highscores[i][:-1], small_text, display_width/2 , 100 + (30*(i+1)))
+        
+        button("back",display_width/3,550,200,50,menu)
+
+        pygame.display.update()
+
 
 #main menu
 def menu():
@@ -186,12 +215,15 @@ def menu():
         gameDisplay.fill(black)
         for event in pygame.event.get():
                 if event.type == pygame.QUIT: game_quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE: game_loop()
 
         message_display("From Mars to Jupiter", large_text, display_width/2 , display_height/10)
 
         button("Play",display_width/3,150,200,50,game_loop)
         button("Controls",display_width/3,220,200,50,controls)
-        button("Quit",display_width/3,290,200,50,game_quit)
+        button("Highscores",display_width/3,290,200,50,show_highscores)
+        button("Quit",display_width/3,360,200,50,game_quit)
 
         pygame.display.update()
 
@@ -201,27 +233,35 @@ def crash_menu(score):
     highscores = []
     file = open("highscores.txt", "r")
     for line in file:
-        highscores.append(int(line))
+        highscores.append(line)
+    file.close()
+
+    #convert list of lines to list of partitions
+    for i in range(len(highscores)):
+        highscores[i] = highscores[i][:-1]
+        highscores[i] = highscores[i].partition(" ")
+    
 
     #if the score is high enough ask for name, else only show menu
-    if score > min(highscores) or len(highscores) < 10:
+    if (len(highscores) > 0 and score > int(min(highscores, key = getKey)[0])) or len(highscores) < 10:
         gameDisplay.fill(black)
-        message_display("You got a Highscore!", large_text, display_width/2 , display_height/2)
-        pygame.display.update()
-        pygame.time.delay(1500)
-
         username = ask("name")
 
-        highscores.append(score)
-        highscores.sort()
-        highscores.reverse()
-
-        #stand: layout für txt überlegen, einlesen dementsprechend anpassen, neue highscores wieder in datei schreiben
+        highscores.append((str(score)," ",username))
+        highscores.sort(key=getKey, reverse = True)
 
         if len(highscores) > 10:
             highscores.remove(highscores[10])
 
+        #convert list back to lines and write in file
+        file = open("highscores.txt", "w")
+        for i in range(len(highscores)):
+            highscores[i] = highscores[i][0] + highscores[i][1] + highscores[i][2] + "\n"
+            file.write(highscores[i])
 
+        file.close()
+
+    #crash_menu
     exit_crash_menu = False
     while exit_crash_menu == False:
         gameDisplay.fill(black)
@@ -256,6 +296,8 @@ def pause():
         button("Continue",display_width/3,150,200,50,unpause)
         button("Restart",display_width/3,220,200,50,game_loop)
         button("Quit",display_width/3,290,200,50,game_quit)
+
+        message_display("You can also press p to continue.", small_text, display_width/2 , 400)
 
         pygame.display.update()
     
