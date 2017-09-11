@@ -142,6 +142,10 @@ def ask(question):
 def getKey(item):
     return int(item[0])
 
+#key function for Stars
+def getKey_stars(star):
+    return star.y
+
        
 #classes
 class Asteroid:
@@ -162,8 +166,21 @@ class Bonus:
         self.y = y
         self.feature = feature
         
+class Star:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
 
+
+#function to draw stars
+def init_background(y,width,height,num):
+    stars = []
+    for i in range(0,num-1):
+        stars.append(Star(random.randint(0,width),random.randint(y ,y + height)))
+        
+    stars.append(Star(random.randint(0,width), y))
+    return stars
 
 
 def controls():
@@ -191,7 +208,6 @@ def show_highscores():
     file.close()
 
     
-        
     exit_highscores = False
     while exit_highscores == False:
         gameDisplay.fill(black)
@@ -322,6 +338,10 @@ def game_loop():
     asteroids = list()
     boni = list()
     shots = list()
+
+    #initialize background
+    stars_1 = init_background(0, display_width, display_height, 100)
+    stars_2 = init_background(-display_height, display_width, display_height, 60)
     
 
     #initialize Asteroids
@@ -388,6 +408,20 @@ def game_loop():
 
  
         #game logic
+
+        #update background
+        for star in stars_1:
+            star.y += round(fallspeed/2)
+        if min(stars_1, key = getKey_stars).y >= display_height:
+            stars_1 = init_background(-display_height, display_width, display_height, random.randint(50,250))
+
+        for star in stars_2:
+            star.y += round(fallspeed/2)
+        if min(stars_2, key = getKey_stars).y >= display_height:
+            stars_2 = init_background(-display_height, display_width, display_height, random.randint(50,250))
+
+
+        
         #handle timer
         if timer > 0:
             if x < 0 or x > (display_width - ship_width):
@@ -412,7 +446,7 @@ def game_loop():
             if asteroid.y >= display_height + 100:
                 asteroid.y = -800
                 score += 1
-                if score % 20 == 0:
+                if score % 20 == 0 and score < 300:
                     fallspeed += 1
                 
                 asteroid_crash = True
@@ -459,8 +493,18 @@ def game_loop():
                     score += 20
 
         #draw surface
-        draw_image(shipImg, x, y)
+        #draw background
+        for star in stars_1:
+            pygame.draw.circle(gameDisplay, white, [star.x, star.y], 2)
 
+        for star in stars_2:
+            pygame.draw.circle(gameDisplay, white, [star.x, star.y], 2)
+
+
+        #draw ship         
+        draw_image(shipImg, x, y)
+        
+        #draw asteroids
         for asteroid in asteroids:
             if asteroid.width == small_asteroid_width:
                 draw_image(asteroid_small_Img, asteroid.x, asteroid.y)
@@ -468,10 +512,12 @@ def game_loop():
                 draw_image(asteroid_medium_Img, asteroid.x, asteroid.y)
             else:
                 draw_image(asteroid_large_Img, asteroid.x, asteroid.y)
-
+            
+        #draw shots
         for shot in shots:
             pygame.draw.rect(gameDisplay, red, (shot.x, shot.y, shot_width, shot_height))
-
+        
+        #draw boni
         for bonus in boni:
             pygame.draw.circle(gameDisplay, white, (bonus.x,bonus.y), bonus_radius, 3)
             message_display(bonus.feature, 7, bonus.x, bonus.y)
