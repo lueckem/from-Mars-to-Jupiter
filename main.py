@@ -1,9 +1,3 @@
-## to do:
-## update asteroid graphics
-## small tutorial
-## easy,medium,hard
-## optimize control sensibility
-
 import pygame
 import random
 
@@ -17,8 +11,6 @@ ship_height = 80
 shot_width = 5
 shot_height = 15
 shot_speed = 20
-thing_width = 6
-thing_speed = 6
 
 large_text = 40
 small_text = 20
@@ -53,11 +45,11 @@ pygame.display.set_caption('From Mars to Jupiter')
 clock = pygame.time.Clock()
 
 #load graphics
-shipImg = pygame.image.load('ship.png')
-asteroid_small_Img = pygame.image.load('asteroid_small.png')
-asteroid_medium_Img = pygame.image.load('asteroid_medium.png')
-asteroid_large_Img = pygame.image.load('asteroid_large.png')
-tutorialImg =  pygame.image.load('tutorial.png')
+shipImg = pygame.image.load('images/ship.png')
+asteroid_small_Img = pygame.image.load('images/asteroid_small.png')
+asteroid_medium_Img = pygame.image.load('images/asteroid_medium.png')
+asteroid_large_Img = pygame.image.load('images/asteroid_large.png')
+tutorialImg =  pygame.image.load('images/tutorial.png')
 
 #functions
 def game_quit():
@@ -93,7 +85,7 @@ def score_display(score):
 
 def shots_display(num_shots):
     font = pygame.font.SysFont(None, 25)
-    text = font.render("Shots: "+str(num_shots), True, white)
+    text = font.render("Ammo: "+str(num_shots), True, white)
     gameDisplay.blit(text,(0,20))
 
 #builds a button and does action if clicked
@@ -352,7 +344,6 @@ def game_loop():
     asteroids = list()
     boni = list()
     shots = list()
-    #exhaust = list()
 
     #initialize background
     stars_1 = init_background(0, display_width, display_height, 100)
@@ -463,7 +454,7 @@ def game_loop():
             if asteroid.y >= display_height + 100:
                 asteroid.y = -800
                 score += 1
-                if score % 20 == 0 and score < 300:
+                if score % 20 == 0:
                     fallspeed += 1
                 
                 asteroid_crash = True
@@ -499,16 +490,16 @@ def game_loop():
         for bonus in boni:
             bonus.y += fallspeed
             if bonus.y > display_height + 100:
-                bonus.y = random.randint(-6000, -500)
+                bonus.y = random.randint(-7000, -1500)
                 bonus.x = random.randint(0, display_width)
 
             if crashed((x,y), (bonus.x-bonus_radius,bonus.y-bonus_radius), ship_width, ship_height, 2*bonus_radius,2*bonus_radius) == True:
-                bonus.y = random.randint(-6000, -500)
+                bonus.y = random.randint(-7000, -1500)
                 if bonus.feature == "shots":
                     num_shots += 3
                 elif bonus.feature == "score":
                     score += 20
-                elif bonus.feature == "slow":
+                elif bonus.feature == "slow" and fallspeed > 2:
                     fallspeed -= 1
 
         #draw surface
@@ -546,14 +537,7 @@ def game_loop():
         #draw shots
         for shot in shots:
             pygame.draw.rect(gameDisplay, red, (shot.x, shot.y, shot_width, shot_height))
-
-        #draw exhaust
-##        exhaust.append(Star(x + 27, y + 63 - thing_speed))
-##        for thing in exhaust:
-##            thing.y += thing_speed
-##            if thing.y > display_height:
-##                exhaust.remove(thing)
-##            pygame.draw.rect(gameDisplay, bright_blue, (thing.x, thing.y, thing_width, thing_speed))
+                             
         pygame.draw.polygon(gameDisplay, bright_blue, [[x + 27, y +63], [x + 33, y + 63], [x + 30, y + 63 + 28]])
 
         
