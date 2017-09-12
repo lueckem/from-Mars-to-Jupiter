@@ -57,6 +57,7 @@ shipImg = pygame.image.load('ship.png')
 asteroid_small_Img = pygame.image.load('asteroid_small.png')
 asteroid_medium_Img = pygame.image.load('asteroid_medium.png')
 asteroid_large_Img = pygame.image.load('asteroid_large.png')
+tutorialImg =  pygame.image.load('tutorial.png')
 
 #functions
 def game_quit():
@@ -184,7 +185,7 @@ def init_background(y,width,height,num):
     stars.append(Star(random.randint(0,width), y))
     return stars
 
-
+#controls and tutorial
 def controls():
     exit_controls = False
     while exit_controls == False:
@@ -193,11 +194,22 @@ def controls():
             if event.type == pygame.QUIT: game_quit()
 
         message_display("Controls", large_text, display_width/2 , display_height/10)
-        message_display("Move: Arrow Keys", small_text, 300, 175)
-        message_display("Shoot: Space", small_text, 300, 245)
-        message_display("Pause: p", small_text, 300, 315)
+        message_display("Move: Left and right arrow keys", small_text, 300, 130)
+        message_display("Shoot: Space", small_text, 300, 160)
+        message_display("Pause: p", small_text, 300, 190)
 
-        button("back",display_width/3,400,200,50,menu)
+        draw_image(tutorialImg, 75, 240)
+        #draw first bonus
+        pygame.draw.circle(gameDisplay, white, (275,240+235), bonus_radius, 2)
+        pygame.draw.rect(gameDisplay, red, (275 - bonus_radius/5 , 240+235 - (4*bonus_radius)/5, (2*bonus_radius)/5, (8*bonus_radius)/5))
+        #draw second bonus
+        pygame.draw.circle(gameDisplay, white, (300,240+275), bonus_radius, 2)
+        message_display("+20", 10, 300, 240+275)
+        #draw third bonus
+        pygame.draw.circle(gameDisplay, white, (325,240+315), bonus_radius, 2)
+        pygame.draw.polygon(gameDisplay, white, [[325 - 7, 240+315 - 7], [325 + 7, 240+315 -7], [325, 240+315 + 10]])
+        
+        button("back",display_width/3,610,200,50,menu)
 
         pygame.display.update()
 
