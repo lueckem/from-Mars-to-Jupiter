@@ -46,10 +46,14 @@ clock = pygame.time.Clock()
 
 #load graphics
 shipImg = pygame.image.load('images/ship.png')
+shipicon = pygame.image.load('images/shipicon.png')
 asteroid_small_Img = pygame.image.load('images/asteroid_small.png')
 asteroid_medium_Img = pygame.image.load('images/asteroid_medium.png')
 asteroid_large_Img = pygame.image.load('images/asteroid_large.png')
 tutorialImg =  pygame.image.load('images/tutorial.png')
+
+#set icon
+pygame.display.set_icon(shipicon)
 
 #functions
 def game_quit():
@@ -410,8 +414,12 @@ def game_loop():
                     pause()
         
         pressed = pygame.key.get_pressed()
-        if pressed[pygame.K_LEFT]: x -= 10
-        if pressed[pygame.K_RIGHT]: x += 10
+        if pressed[pygame.K_LEFT]:
+            if fallspeed < 20: x -= round(-0.25*fallspeed + 10.5) #fast ship -> hard to steer
+            else: x -= 5
+        if pressed[pygame.K_RIGHT]:
+            if fallspeed < 20: x += round(-0.25*fallspeed + 10.5)
+            else: x += 5
             
 
  
