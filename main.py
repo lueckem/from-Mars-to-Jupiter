@@ -102,7 +102,7 @@ def button(text, x, y, width, height, action):
         pygame.draw.rect(gameDisplay, black,(x + 2, y +2, width - 4, height - 4))
         message_display(text, small_text, x + width/2, y + height/2)
         if click[0] == 1:
-            pygame.time.delay(100)
+            pygame.time.delay(200)
             action()
     else:
         pygame.draw.rect(gameDisplay, dark_white,(x, y, width, height))
@@ -420,6 +420,10 @@ def game_loop():
         if pressed[pygame.K_RIGHT]:
             if fallspeed < 20: x += round(-0.25*fallspeed + 10.5)
             else: x += 5
+
+        #if pressed[pygame.K_UP]: y -= 10
+        #if pressed[pygame.K_DOWN]: y+= 10
+        
             
 
  
@@ -488,10 +492,11 @@ def game_loop():
             shot.y -= shot_speed
             if shot.y < -1000:
                 shots.remove(shot)
-            for asteroid in asteroids:
-                if crashed ((shot.x,shot.y),(asteroid.x, asteroid.y), shot_width, shot_height, asteroid.width, asteroid.height) == True:
-                    shots.remove(shot)
-                    asteroid.y = display_height +1000
+            else:
+                for asteroid in asteroids:
+                    if crashed ((shot.x,shot.y),(asteroid.x, asteroid.y), shot_width, shot_height, asteroid.width, asteroid.height) == True:
+                        shots.remove(shot)
+                        asteroid.y = display_height +1000
 
 
         #update boni
